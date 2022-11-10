@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, TextInput, FlatList, TouchableOpacity, Modal } from 'react-native';
+import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { useState } from 'react';
 
 export default function App() {
 
   const [textItem, setTextItem] = useState("")
   const [itemList, setItemList] = useState([])
+  const [modalVisible, setModalVisible] = useState(false)
+  const [itemSelected, setItemSelected] = useState({})
 
   const handleChangeItem = (t) => {
     setTextItem(t)
@@ -17,15 +19,32 @@ export default function App() {
     setTextItem('');
   }
 
+  const selectItem = (id) => {
+    const selection = itemList.find(item => item.id === id)
+    setItemSelected(selection)
+    setModalVisible(true)
+    console.log(itemSelected)
+  }
+
+  const deleteItem = () => {
+    const newItemList = itemList.filter(item => item.id !== itemSelected.id)
+    setItemList(newItemList)
+    setItemSelected({})
+    setModalVisible(false)
+  }
+
   const renderItem = ({item}) => (
-    <View>
+    <TouchableOpacity onPress={() => selectItem(item.id)}>
       <Text style={styles.item}>{item.value}</Text>
-    </View>
+    </TouchableOpacity>
   )
+
+
 
   return (
     
     <View style={styles.container}>
+      <Text style={styles.mainTitle}>Mi Lista de Compras</Text>
       <View style={styles.inputContainer}>
         <TextInput
         onChangeText={handleChangeItem} 
@@ -46,17 +65,39 @@ export default function App() {
         keyExtractor={(item) => item.id}
         />
       </View>
+
+      <Modal 
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text>Eliminar de la lista?</Text>
+            <TouchableOpacity onPress={() => deleteItem()}>
+              <Text>Eliminar</Text>
+            </TouchableOpacity>
+          </View>
+          
+        </View>
+        
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 80,
+    paddingTop: 100,
     flex: 1,
     backgroundColor: '#778',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  mainTitle: {
+    fontSize: 30,
+    color: 'white',
   },
 
   inputContainer: {
@@ -96,6 +137,21 @@ const styles = StyleSheet.create({
   flatList: {
     fontSize: 20,
     padding:20
-  }
+  },
+
+  modalContainer: {
+    backgroundColor: 'transparent',
+    height: "100%",
+    alignItems: 'center',
+    paddingTop: '80%'
+  },
+
+  modalContent: {
+    backgroundColor: 'red',
+    padding: '2%',
+    borderWidth: 2,
+    borderRadius: 10,
+    justifyContent: 'center'
+  },
 })
 
